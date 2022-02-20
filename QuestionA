@@ -1,0 +1,215 @@
+#Question1a
+from google.colab import files
+file=files.upload()
+
+import datacompy, pandas as pd
+df1 = pd.read_excel(r'Boston - Copy.xlsx')
+df2 = pd.read_excel(r'Boston.xlsx')
+print(df1.head(10))
+
+compare = datacompy.Compare(df1, df2, join_columns='ZN', abs_tol=0, rel_tol=0, df1_name='Original', df2_name='New')
+
+print(compare.report())
+
+# We use DataCompy ( python package) to compare between 2 data sets.
+#DataCompPy requires you to provide a list of columns (can be just one) that will act as the key for the join. 
+#We can also set it up so that it works based on the indexes. 
+#If the library detects duplicates on the join key, then it will sort the remaining fields and join based on that row number.
+
+#Question 1B.
+from google.colab import files
+file=files.upload()
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+%matplotlib inline
+
+df=pd.read_excel(r'Boston.xlsx')
+df.head()
+df1=pd.read_csv('problem1_dataset.csv')
+df1=df1.drop(['Time'],axis=1)
+df1.head()
+sns.lmplot(x=df.columns[0],y=df.columns[1],data=df)
+#defining response and predictors for boston dataset
+y = df[df.columns[-1]]
+#X = df[[df.columns[0]]]len(df.columns)
+X=df.drop(columns=['MEDV','AGE','DIS','NOX','PTRATIO','INDUS'])
+#defining response and predictors for problem_1
+y = df1[df1.columns[1]]
+X = df1[[df1.columns[0]]]
+#OLS model to fir data for problem 1
+import statsmodels.api as sm
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
+
+train_features_scaled = scaler.fit_transform(X)
+
+train_features_scaled = pd.DataFrame(train_features_scaled, index=X.index, columns=X.columns)
+train_features_scaled = sm.add_constant(train_features_scaled)
+ols_model_0 = sm.OLS(y, train_features_scaled)
+
+ols_res_0 = ols_model_0.fit()
+print(ols_res_0.summary())
+
+#Inference
+#Underfitting is a scenario in data science where a data model is unable to capture 
+#the relationship between the input and output variables accurately
+# It is visible that it is better to fit a polynomial model instead of linear model, which arises bias.
+
+#OLS model to fir data for Boston data
+import statsmodels.api as sm
+from statsmodels.stats.outliers_influence import variance_inflation_factor
+
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
+
+train_features_scaled = scaler.fit_transform(X)
+
+train_features_scaled = pd.DataFrame(train_features_scaled, index=X.index, columns=X.columns)
+train_features_scaled = sm.add_constant(train_features_scaled)
+ols_model_0 = sm.OLS(y, train_features_scaled)
+
+ols_res_0 = ols_model_0.fit()
+print(ols_res_0.summary())
+
+# In this dataset if we decrease the number of variables the R-square value decreases implying bias is increased.
+# In general using simple model can introduce bias since they are not able to capture the true underlying process from which the data is generated.
+
+# Techniques to avoid underfitting
+
+#Increase the duration of training
+#Stopping training too soon can also result in underfit model. Therefore, by extending the duration of training, underfiiting can be avoided. 
+
+#Feature selection
+#With any model, specific features are used to determine a given outcome. 
+#If there are not enough predictive features present, then more features or features with greater importance, should be introduced.
+#In case of Boston dataset decreasing number of features leads to bias.
+#Increasing number of features can avoid underfiiting.
+
+#Decrease regularization
+#Regularization is typically used to reduce the variance with a model by applying 
+# a penalty to the input parameters with the larger coefficients.
+
+#Overfitting
+
+#Overfitting occurs when the model performs well on training data but generalizes poorly to unseen data
+
+#defining response and predictors for boston dataset
+y = df[df.columns[-1]]
+X=df.drop(columns=['MEDV'])
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=101)
+
+from sklearn.tree import DecisionTreeRegressor
+dtree = DecisionTreeRegressor()
+dtree.fit(X_train,y_train)
+
+#defining response and predictors for boston dataset
+y = df[df.columns[-1]]
+X=df.drop(columns=['MEDV'])
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=101)
+
+from sklearn.tree import DecisionTreeRegressor
+dtree = DecisionTreeRegressor()
+dtree.fit(X_train,y_train)
+
+from sklearn.metrics import classification_report,confusion_matrix
+predictions = dtree.predict(X_test)
+predictions1 = dtree.predict(X_train)
+
+from sklearn import metrics
+print('MAE:', metrics.mean_absolute_error(y_train, predictions1))
+print('MSE:', metrics.mean_squared_error(y_train, predictions1))
+print('RMSE:', np.sqrt(metrics.mean_squared_error(y_train, predictions1)))
+
+print('MAE:', metrics.mean_absolute_error(y_test, predictions))
+print('MSE:', metrics.mean_squared_error(y_test, predictions))
+print('RMSE:', np.sqrt(metrics.mean_squared_error(y_test, predictions)))
+
+#Inference
+
+#we found that using decision tree regressor the model is overfitting
+
+#Now we discuss some techniques to avoid overfitting
+#Cross-validation (data)
+#We can split our dataset into k groups (k-fold cross-validation). 
+#We let one of the groups to be the testing set (please see hold-out explanation) and the others as the training set, 
+#and repeat this process until each individual group has been used as the testing set (e.g., k repeats)
+
+#Feature selection (data)
+#If we have only a limited amount of training samples, each with a large number of features, 
+#we should only select the most important features for training so that our model doesn’t need to learn 
+#for so many features and eventually overfit.
+
+#L1 / L2 regularization (learning algorithm)
+#Regularization is a technique to constrain our network from learning a model that is too complex, which may therefore overfit. 
+#In L1 or L2 regularization, we can add a penalty term on the cost function to push the estimated coefficients towards zero
+#(and not take more extreme values). L2 regularization allows weights to decay towards zero but not to zero, while L1 regularization allows weights to decay to zero.
+
+
+#Question 1D.
+from google.colab import files
+file=files.upload()
+
+#personal loan
+import pandas as pd
+%matplotlib inline
+Df=pd.read_csv('loan_data.csv')
+Df.head(3)
+
+#Data preparation
+cat_feats = ['purpose']
+final_data = pd.get_dummies(Df,columns=cat_feats,drop_first=True)
+
+#defining response and predictors for loan dataset
+y= final_data['not.fully.paid']
+X=final_data.drop(columns=['not.fully.paid'], axis =1)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+
+from sklearn.linear_model import LogisticRegression
+logmodel = LogisticRegression()
+logmodel.fit(X_train,y_train)
+predictions = logmodel.predict(X_test)
+print(classification_report(y_test,predictions))
+
+from sklearn.metrics import classification_report,confusion_matrix
+print(confusion_matrix(y_test,predictions))
+
+from sklearn.linear_model import LogisticRegression
+logmodel = LogisticRegression(max_iter=50)
+logmodel.fit(X_train,y_train)
+predictions = logmodel.predict(X_test)
+print(classification_report(y_test,predictions))
+print(confusion_matrix(y_test,predictions))
+
+from sklearn.linear_model import LogisticRegression
+logmodel = LogisticRegression(max_iter=150)
+logmodel.fit(X_train,y_train)
+predictions = logmodel.predict(X_test)
+print(confusion_matrix(y_test,predictions))
+
+from sklearn.tree import DecisionTreeClassifier
+dtree = DecisionTreeClassifier()
+dtree.fit(X_train,y_train)
+predictions = dtree.predict(X_test)
+print(confusion_matrix(y_test,predictions))
+
+from sklearn.tree import DecisionTreeClassifier
+dtree = DecisionTreeClassifier(max_depth=4)
+dtree.fit(X_train,y_train)
+predictions = dtree.predict(X_test)
+print(confusion_matrix(y_test,predictions))
+
+# we change different hyperparameters of machine learning models and as a result the parameters also changed.
+# Also due to random sampling the parameters for each iteration changes.
+# In case of decision tree if we change max depth the accuracy also changes.
+
+
